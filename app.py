@@ -54,14 +54,13 @@ class Wiz(tk.Tk):
         self.init_plot()
         #       setting the plot and axes limits,
         #       calling canvas first so that plot manipulation on site is possible
-        # fig = Figure()
-        fig = Figure(figsize=(5, 8), dpi=100)
+        fig = Figure()
         self.canvas = FigureCanvasTkAgg(fig, master=self)  # A tk.DrawingArea.
         self.canvas.draw()
         self.axes = fig.add_subplot(111, projection='3d')
         self.axes.autoscale(enable=True)
-        self.axes.set_xlim3d(-10, 15)
-        self.axes.set_ylim3d(-10, 20)
+        self.axes.set_xlim3d(-25, 25)
+        self.axes.set_ylim3d(-25, 25)
         self.axes.set_zlim3d(0, 50)
         self.main_plot_line, = self.axes.plot(self.wyniki[:, 0], self.wyniki[:, 1],
                                               self.wyniki[:, 2], color="green")
