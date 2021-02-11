@@ -15,6 +15,28 @@ from matplotlib.animation import FuncAnimation
 import numpy as np
 
 
+def makeform(widget, fields, params):
+    """
+    generic form making for changing parameters windows
+    :param params: default parameters to display
+    :param widget: window that will be changed
+    :param fields: fields to employ
+    :return:
+    """
+    entries = {}
+    fields = [fields] if isinstance(fields, str) else fields
+    for field in fields:
+        row = Frame(widget)
+        lab = tk.Label(row, width=22, text=field + ": ", anchor='w')
+        ent = tk.Entry(row)
+        ent.insert(0, params[field])
+        row.pack(side=TOP, fill=X, padx=5, pady=5)
+        lab.pack(side=LEFT)
+        ent.pack(side=RIGHT, expand=YES, fill=X)
+        entries[field] = ent
+    return entries
+
+
 class Wiz(tk.Tk):
     """
     window for visualisation
@@ -213,7 +235,7 @@ class Wiz(tk.Tk):
         start_form_cancel.pack(side=tk.TOP)
         fields = ('x0', 'y0', 'z0')
         params = {'x0': self.begin[0], 'y0': self.begin[1], 'z0': self.begin[2]}
-        ents = self.makeform(start_form, fields, params)
+        ents = makeform(start_form, fields, params)
 
     def cancel_window(self, widget):
         """
@@ -223,27 +245,6 @@ class Wiz(tk.Tk):
         """
         self.button_state(NORMAL)
         widget.destroy()
-
-    def makeform(self, widget, fields, params):
-        """
-        generic form making for changing parameters windows
-        :param params: default parameters to display
-        :param widget: window that will be changed
-        :param fields: fields to employ
-        :return:
-        """
-        entries = {}
-        fields = [fields] if isinstance(fields, str) else fields
-        for field in fields:
-            row = Frame(widget)
-            lab = tk.Label(row, width=22, text=field + ": ", anchor='w')
-            ent = tk.Entry(row)
-            ent.insert(0, params[field])
-            row.pack(side=TOP, fill=X, padx=5, pady=5)
-            lab.pack(side=LEFT)
-            ent.pack(side=RIGHT, expand=YES, fill=X)
-            entries[field] = ent
-        return entries
 
     def equation_show(self):
         """
@@ -262,7 +263,7 @@ class Wiz(tk.Tk):
         lorenz_form_cancel.pack(side=tk.TOP)
         fields = ('sigma', 'rho', 'beta')
         params = self.equation.get_params()
-        ents = self.makeform(lorenz_form, fields, params)
+        ents = makeform(lorenz_form, fields, params)
 
     def taylor(self):
         """
@@ -281,7 +282,7 @@ class Wiz(tk.Tk):
         taylor_form_cancel.pack(side=tk.TOP)
         fields = ('order', 'time step')
         params = dict(self.integrators['Taylor'].get_solver_params())
-        ents = self.makeform(taylor_form, fields, params)
+        ents = makeform(taylor_form, fields, params)
 
     def runge(self):
         """
@@ -300,7 +301,7 @@ class Wiz(tk.Tk):
         runge_form_cancel.pack(side=tk.TOP)
         fields = ('time step')
         params = dict(self.integrators['Runge-Kutta'].get_solver_params())
-        ents = self.makeform(runge_form, fields, params)
+        ents = makeform(runge_form, fields, params)
 
     def step(self):
         """
