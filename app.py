@@ -55,10 +55,12 @@ class Wiz(tk.Tk):
         self.init_plot()
         #       setting the plot and axes limits,
         #       calling canvas first so that plot manipulation on site is possible
+        # fig = Figure()
         fig = Figure(figsize=(5, 8), dpi=100)
         self.canvas = FigureCanvasTkAgg(fig, master=self)  # A tk.DrawingArea.
         self.canvas.draw()
         self.axes = fig.add_subplot(111, projection='3d')
+        self.axes.autoscale(enable=True)
         self.axes.set_xlim3d(-10, 15)
         self.axes.set_ylim3d(-10, 20)
         self.axes.set_zlim3d(0, 50)
@@ -69,14 +71,14 @@ class Wiz(tk.Tk):
                                                          [self.wyniki[-1, 2]], color="red")
         self.axes.set_axis_off()
         self.canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
-        #setting animation
+        # setting animation
         self.ani = FuncAnimation(fig, self.animate_one, interval=200)
         self.paused = False
-        #setting matplotlib toolbar, part of features is not working with 3d
+        # setting matplotlib toolbar, part of features is not working with 3d
         toolbar = NavigationToolbar2Tk(self.canvas, self)
         toolbar.update()
         self.canvas.mpl_connect("key_press_event", self.on_key_press)
-        #setting 1st toolbar
+        # setting 1st toolbar
         toolbar2 = Frame(master=self, bd=1, relief=FLAT)
         toolbar2.pack(side=BOTTOM, fill=X)
         quit_but = tk.Button(master=toolbar2, text="Quit", command=self._quit)
@@ -86,9 +88,9 @@ class Wiz(tk.Tk):
         self.lorenz = tk.Button(master=toolbar2, text="Lorenz", command=self.equation_show)
         self.lorenz.pack(side=tk.LEFT)
         self.starting_point = tk.Button(master=toolbar2, relief=RAISED,
-                               text="Starting point", command=self.start_set)
+                                        text="Starting point", command=self.start_set)
         self.starting_point.pack(side=LEFT)
-        #setting 2nd toolbar
+        # setting 2nd toolbar
         toolbar3 = Frame(master=self, bd=1, relief=RAISED)
         toolbar3.pack(side=TOP, fill=X)
         self.taylint = tk.Button(master=toolbar3, relief=RAISED, text="Taylor", command=self.taylor)
@@ -108,7 +110,7 @@ class Wiz(tk.Tk):
         self.btn_text_axes = tk.StringVar()
         self.btn_text_axes.set("Axes Off")
         axes_show = tk.Button(master=toolbar2, relief=FLAT,
-                               textvariable=self.btn_text_axes, command=self.axes_switch)
+                              textvariable=self.btn_text_axes, command=self.axes_switch)
         axes_show.pack(side=RIGHT)
         self.ax_state = False
 
@@ -228,10 +230,10 @@ class Wiz(tk.Tk):
         start_form.title("Taylor solver parameters")
         start_form.geometry("300x150")
         start_form_submit = Button(start_form, text="Submit",
-                                    command=lambda: self.submit_start_point(start_form, ents))
+                                   command=lambda: self.submit_start_point(start_form, ents))
         start_form_submit.pack(side=tk.BOTTOM)
         start_form_cancel = Button(start_form, text="Cancel",
-                                    command=lambda: self.cancel_window(start_form))
+                                   command=lambda: self.cancel_window(start_form))
         start_form_cancel.pack(side=tk.TOP)
         fields = ('x0', 'y0', 'z0')
         params = {'x0': self.begin[0], 'y0': self.begin[1], 'z0': self.begin[2]}
@@ -299,7 +301,7 @@ class Wiz(tk.Tk):
         runge_form_cancel = Button(runge_form, text="Cancel",
                                    command=lambda: self.cancel_window(runge_form))
         runge_form_cancel.pack(side=tk.TOP)
-        fields = ('time step')
+        fields = 'time step'
         params = dict(self.integrators['Runge-Kutta'].get_solver_params())
         ents = makeform(runge_form, fields, params)
 
