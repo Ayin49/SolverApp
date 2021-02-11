@@ -1,25 +1,25 @@
 """
-moduł z kilkoma metodami wyliczania przybliżeń rozwiązania równania Lorentza
+module with several solvers for Lorenz equation implemented
 """
 import numpy as np
 
 
 class LorenzEquation:
     """
-    obiekt odpowiadający  równaniu Lorenza, zawiera podstawowe parametry do jego jego zdefiniowania
+    object that conveys generic Lorenz equation with necessary paramteres for evaluation
     dx/dt = sigma * (y-x)
     dy/dt = x * (rho - z) - y
     dz/dt = x * y - beta * z
     """
 
     def __init__(self, sigma=10.0, rho=28.0, beta=8 / 3):
-        self.sigma = sigma
-        self.rho = rho
-        self.beta = beta
+        self.sigma = float(sigma)
+        self.rho = float(rho)
+        self.beta = float(beta)
 
     def eval(self, point):
         """
-        :param point: floating precision, ndarray 3 values
+        :param point: float precision, possibly ndarray 3 values
         :return: evaluation of lorentz equation for specified point as ndarray
         """
         assert len(point) == 3
@@ -30,14 +30,14 @@ class LorenzEquation:
 
     def get_params(self):
         """
-        zwraca parametry równania
-        :return: dictonary of parameters
+        :return: dictonary of equation parameters
         """
         return {"sigma": self.sigma, "rho": self.rho, "beta": self.beta}
 
     def set_params(self, params):
         """
-        ustawia parametry równania
+        sets the parameters of equation
+        params: dictionary of parameters
         """
         self.sigma = params['sigma']
         self.rho = params['rho']
@@ -46,21 +46,20 @@ class LorenzEquation:
 
 class TaylorIntegrator:
     """
-    obiekt odpowiadajacy metodzie numerycznej obliczania trajektorii równania różniczkowego
-    metodą rozwijania w szereg Taylora
+    solver for Lorenz equation implementing Taylor method of possibly large order
+    higher order needs smaller time step as auxiliary computations with derivatives
+    tends to get larger and can get to overflow
     """
 
     def __init__(self, lorenz: LorenzEquation):
-        # inicjalizacja, potrzebuje sparametryzowanego równania lorentza na wejsciu
         self.lorenz = lorenz
         self.params = {'order': 4, 'time step': 0.01}
 
     def step(self, initial_values):
         """
-        wylicza jeden krok metodą Taylora,
-        potrzebuje punktu startowego w initial_values
-        możliwe parametry to czas  odpowiadający długości kroku
-        i rząd odpowiadający dokładności metody
+        computes one step with Taylor method
+        initial_values: possible ndarray, point in 3d
+        return: point in 3d after one step in ndarray
         """
         assert len(initial_values) == 3
         fx0, fy0, fz0 = self.lorenz.eval(initial_values)
@@ -83,7 +82,8 @@ class TaylorIntegrator:
         # print(vector_of_derivatives)
         def helper(tempv, iteracja=(self.params['order'] - 1)):
             if iteracja != 0:
-                return helper(tempv * self.params['time step'] + vector_of_values[:, iteracja - 1], iteracja - 1)
+                return helper(tempv * self.params['time step'] +
+                              vector_of_values[:, iteracja - 1], iteracja - 1)
             return tempv
 
         wynik = helper(vector_of_values[:, self.params['order'] - 1])
@@ -91,8 +91,7 @@ class TaylorIntegrator:
 
     def get_lorenz_params(self):
         """
-        zwraca parametry rownania Lorentza
-        :return: dictionary of parameters
+        :return: dictionary of parameters of Lorenz equation
         """
         return self.lorenz.get_params()
 
@@ -111,10 +110,10 @@ class TaylorIntegrator:
 
     def set_solver_params(self, params):
         """
-        :param params: dict of time step and order
+        :param params: dict of parameters, ie. time step and order
         """
         self.params['time step'] = params['time step']
-        self.params['order'] = params['order']
+        self.params['order'] = int(params['order'])
 
 
 class RungeKutta4th:
@@ -129,7 +128,7 @@ class RungeKutta4th:
     def step(self, initial_values):
         """
         :param initial_values: 3d coord
-        :return: 3d coord after 1 step
+        :return: 3d coord after 1 step as ndarray
         """
         assert len(initial_values) == 3
         init = np.asarray(initial_values)
@@ -142,7 +141,6 @@ class RungeKutta4th:
 
     def get_lorenz_params(self):
         """
-        zwraca parametry rownania Lorentza
         :return: dictionary of parameters
         """
         return self.lorenz.get_params()
