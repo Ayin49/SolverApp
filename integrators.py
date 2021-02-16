@@ -2,6 +2,7 @@
 module with several solvers for Lorenz equation implemented
 """
 import numpy as np
+from numpy.core._multiarray_umath import ndarray
 
 
 class LorenzEquation:
@@ -47,8 +48,6 @@ class LorenzEquation:
 class TaylorIntegrator:
     """
     solver for Lorenz equation implementing Taylor method of possibly large order
-    higher order needs smaller time step as auxiliary computations with derivatives
-    tends to get larger and can get to overflow
     """
 
     def __init__(self, lorenz: LorenzEquation):
@@ -63,31 +62,25 @@ class TaylorIntegrator:
         """
         assert len(initial_values) == 3
         fx0, fy0, fz0 = self.lorenz.eval(initial_values)
-        vector_of_values = np.zeros((3, self.params['order']))
-        vector_of_derivatives = np.zeros((3, self.params['order']))
+        vector_of_values = np.zeros((3, self.params['order']+1))
+        vector_of_derivatives: ndarray = np.zeros((3, self.params['order']))
         vector_of_values[:, 0] = initial_values
         vector_of_derivatives[:, 0] = [fx0, fy0, fz0]
         vector_of_values[:, 1] = vector_of_derivatives[:, 0]
-
+        l_params = self.lorenz.get_params()
         for i in range(1, self.params['order'] - 1):
-            vector_of_derivatives[:, i] = self.lorenz.eval(vector_of_values[:, i])
-            mody = np.fromfunction(lambda j, k=i: 2 * vector_of_values[0, k - j]
-                                                  * vector_of_values[2, j], dtype=int, shape=[1, i])
-            modz = np.fromfunction(lambda j, k=i: 2 * vector_of_values[0, k - j]
-                                                  * vector_of_values[1, j], dtype=int, shape=[1, i])
-            vector_of_derivatives[1, i] -= np.sum(mody)
-            vector_of_derivatives[2, i] += np.sum(modz)
+            vector_of_derivatives[:, i] = [l_params['sigma'] * (vector_of_values[1, i] - vector_of_values[0, i]),
+                                           l_params['rho'] * vector_of_values[0, i] - vector_of_values[1, i],
+                                           (-1) * l_params['beta'] * vector_of_values[2, i]]
+            for j in range(i, -1, -1):
+                vector_of_derivatives[1, i] -= 2 * vector_of_values[0, i - j] * vector_of_values[2, j]
+                vector_of_derivatives[2, i] += 2 * vector_of_values[0, i - j] * vector_of_values[1, j]
+
             vector_of_values[:, i + 1] = vector_of_derivatives[:, i] / (i + 1)
-
-        # print(vector_of_derivatives)
-        def helper(tempv, iteracja=(self.params['order'] - 1)):
-            if iteracja != 0:
-                return helper(tempv * self.params['time step'] +
-                              vector_of_values[:, iteracja - 1], iteracja - 1)
-            return tempv
-
-        wynik = helper(vector_of_values[:, self.params['order'] - 1])
-        return wynik
+        result = vector_of_values[:, self.params['order']-1]
+        for i in range(self.params['order'] - 2, -1, -1):
+            result = result * self.params['time step'] + vector_of_values[:, i]
+        return result
 
     def get_lorenz_params(self):
         """
